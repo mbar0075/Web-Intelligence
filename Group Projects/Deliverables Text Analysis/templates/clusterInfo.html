@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Website</title>
+    <!--Retrieving the required scripts
+    https://github.com/wvengen/d3-wordcloud-->
+    <script src="{{url_for('static', filename='lib/d3/d3.js')}}"></script>
+    <script src="{{url_for('static', filename='lib/d3/d3.layout.cloud.js')}}"></script>
+    <script src="{{url_for('static', filename='d3.wordcloud.js')}}"></script>
+</head>
+
+<body>
+  <script>
+    //Retrieving the data passed to the website from the jupyter notebook
+    var object = ({{opf2|tojson}});
+
+    //Retrieving and parsing the get parameter
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    var parameter = urlParams.get('parameter');
+
+    wordValues = Object.keys(object[parameter]['weights']).map(function(key){return object[parameter]['weights'][key]});
+
+    //Function which using the parameter variable and retrieves the document data coresponding to the specified cluster
+    function getData(){
+      //Looping through the data in the specifed cluster adn create HTML elemnts to dispaly said data
+      for (artIndex in object[parameter]['articles']){
+
+        //Create a new div element
+        const newDiv = document.createElement("div");
+
+        //Specify the content of the new div
+        const newContent = document.createTextNode(object[parameter]['articles'][artIndex]);
+
+        //Add the text node to the newly created div
+        newDiv.appendChild(newContent);
+
+        //Add the newly created element and its content into the DOM
+        const currentDiv = document.getElementById("div1");
+        currentDiv.parentNode.insertBefore(newDiv, currentDiv);
+      }
+    }
+
+    //Function which creates a word cloud according to the values given.
+    //Code was retrieved from https://github.com/wvengen/d3-wordcloud
+    function getWordCloud(){
+      words = Object.keys(object[parameter]['weights'])
+      wordValues = Object.keys(object[parameter]['weights']).map(function(key){return object[parameter]['weights'][key]});
+      wordValPairs = []
+      for (x in words) {
+        var dict = {"text": words[x], "size": wordValues[x]}
+        wordValPairs.push(dict);
+      }
+
+        d3.wordcloud()
+          .size([1500, 1500])
+          .selector('#wordcloud')
+          .words(wordValPairs)
+          .start();
+        }
+    </script>
+
+    <main><center>
+      <h2>Docuements In Cluster</h2>
+      <section>
+        <h2>Documents: </h2>
+        <!--Displaying the list of documents in the cluster-->
+        <div id = "div1"></div>
+      <section>
+
+      <section>
+        <h2>Keyword cloud: </h2>
+        <!--Displaying the wordcloud realting to the cluster-->
+        <div id='wordcloud'></div>
+      </section>
+      <script type="text/javascript">
+      //Calling the respective method to retrieve the data and create the wordcloud
+        getData();
+        getWordCloud();
+      </script>
+    </center></main>
+</body>
+
+</html>

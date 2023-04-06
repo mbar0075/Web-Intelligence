@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Website</title>
+    <!--Retrieving the required scripts
+    https://www.webtips.dev/how-to-make-interactive-bubble-charts-in-d3-js-->
+    <script src="{{url_for('static', filename='d3.v6.js')}}"></script>
+</head>
+
+<body>
+    <main><center>
+        <h1>Web Intelligence Group Project ICS2205</h1>
+        <h2>Jerome Agius 0353803L <br> Matthias Bartolo 0436103L</h2>
+        <script>
+
+        //Function which generates a random hex value which represents a colour.
+        //This function is used in the bubble chart to determine the colour of each bubble
+        function randomColourGen(){
+          let maxColourVal = 0xFFFFFF;
+          let randNum =  Math.floor(Math.random() * maxColourVal).toString(16);
+          let randColor = randNum.padStart(6, 0);
+          return `#${randColor.toUpperCase()}`
+        }
+
+        //Function which given a link redirects the current page to said link
+        //This function is used to convert the get parameter into a usable format
+        function redirect(link){
+          //Replacing & with %26
+          let tmp = "";
+          for (letIndex in link){
+            if(link[letIndex] == '&'){
+              tmp = tmp.concat("%26");
+            }
+            else{
+              tmp = tmp.concat(link[letIndex]);
+            }
+          }
+          window.location = tmp;
+        }
+
+        //Retrieving the data passed to the website from the jupyter notebook
+        var generalData = {{tpf|tojson}};
+        var categoryData = {{opf|tojson}};
+        var termData = {{opf2|tojson}};
+
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        //Method to generate the bubble charts
+        //Code was retrieved from https://www.webtips.dev/how-to-make-interactive-bubble-charts-in-d3-js
+        //and modified as was required to fit the needs of the website
+        const generateChart = (data, locId, site) => {
+            const bubble = data => d3.pack()
+                .size([width, height])
+                .padding(6)(d3.hierarchy({ children: data }).sum(d => d.amount));
+
+            const svg = d3.select(locId)
+                .style('width', width)
+                .style('height', height);
+
+            const root = bubble(data);
+
+            const node = svg.selectAll()
+                .data(root.children)
+                .enter().append('g')
+                .attr('transform', `translate(${width / 2}, ${height / 2})`);
+
+            const circle = node.append('circle')
+                .style('fill', d => randomColourGen())
+                .on('mouseover', function (e, d) {
+                    d3.select(this).style('stroke', '#222');
+                })
+
+                .on('mouseout', function () {
+                    d3.select(this).style('stroke', 'none');
+                })
+                .on('click', (e, d) => redirect(site+"?parameter="+String(d.data.key)));
+
+            const label = node.append('text')
+                .attr("font-size",width/170)
+                .attr("text-anchor", "middle")
+                .text(d => d.data.key.substring(0, d.r / 3));
+
+            node.transition()
+                .ease(d3.easeExpInOut)
+                .duration(1000)
+                .attr('transform', d => `translate(${d.x}, ${d.y})`);
+
+            circle.transition()
+                .duration(1000)
+                .attr('r', d => d.r);
+
+            label.transition()
+                .delay(700)
+                .ease(d3.easeExpInOut)
+                .duration(1000)
+                .style('opacity', 1)
+        };
+
+        //Calling the generateChart method to consturct the two required bubble charts one for the categroy and ane the other for the cluster
+        (async () => {
+            //Formatting the data as required to be used by the generateChart method
+            catDict = []
+            for (key in categoryData){
+              var amount = Object.keys(categoryData[key]['articles']).length;
+              catDict.push({"key": key, "amount": amount})
+            }
+
+            //Formatting the data as required to be used by the generateChart method
+            termDict = []
+            for (key in termData){
+              var amount = Object.keys(termData[key]['articles']).length;
+              termDict.push({"key": key, "amount": amount})
+            }
+        })();
+        </script>
+
+        <h2>Document Selection</h2>
+        <section>
+            <!--Displaying all the document titles which link to the docInfo page-->
+            {% for docIndex in tpf.keys() %}
+            <a href = "docInfo?docIndex={{docIndex}}">{{tpf[docIndex]['headline']}}<br></a>
+            {% endfor %}
+        </section>
+
+        <h2>Category Bubble Chart</h2>
+        <section>
+          <!--Displaying the category bubble chart-->
+        <svg id="bubble-chart"></svg>
+        </section>
+
+        <h2>Cluster Bubble Chart</h2>
+        <section>
+          <!--Displaying the cluster bubble chart-->
+        <svg id="bubble-chart2"></svg>
+        </section>
+        <script>generateChart(catDict,'#bubble-chart',"catInfo");
+        generateChart(termDict,'#bubble-chart2',"clustInfo");</script>
+    </center></main>
+</body>
+
+</html>

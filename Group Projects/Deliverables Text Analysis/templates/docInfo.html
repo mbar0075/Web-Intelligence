@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Website</title>
+    <!--Retrieving the required scripts
+    https://github.com/wvengen/d3-wordcloud-->
+    <script src="{{url_for('static', filename='lib/d3/d3.js')}}"></script>
+    <script src="{{url_for('static', filename='lib/d3/d3.layout.cloud.js')}}"></script>
+    <script src="{{url_for('static', filename='d3.wordcloud.js')}}"></script>
+</head>
+
+<body>
+  <script>
+    //Retrieving the data passed to the website from the jupyter notebook
+    var object = ({{tpf|tojson}});
+
+    //Retrieving and parsing the get parameter
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    var dIndex = urlParams.get('docIndex');
+
+    //Function which using the parameter variable, retrieves the document data and displays it on the page
+    function getData(){
+      document.getElementById("headline").innerHTML = object[dIndex]['headline'];
+      document.getElementById("short_description").innerHTML = object[dIndex]['short_description'];
+      document.getElementById("authors").innerHTML = object[dIndex]['authors'];
+      document.getElementById("date").innerHTML = object[dIndex]['date'];
+      document.getElementById("category").innerHTML = object[dIndex]['category'];
+      document.getElementById("topWords").innerHTML = object[dIndex]['topWords'];
+      document.getElementById("link").innerHTML = object[dIndex]['link'];
+      document.getElementById("link").href = object[dIndex]['link'];
+    }
+
+    //Function which creates a word cloud according to the values given.
+    //Code was retrieved from https://github.com/wvengen/d3-wordcloud
+    function getWordCloud(){
+      words = object[dIndex]['topWords'];
+      wordValues = object[dIndex]['topWordValues'];
+      wordValPairs = []
+      for (x in words) {
+        var dict = {"text": words[x], "size": wordValues[x]}
+        wordValPairs.push(dict);
+      }
+
+        d3.wordcloud()
+          .size([1500, 1500])
+          .selector('#wordcloud')
+          .words(wordValPairs)
+          .start();
+        }
+    </script>
+
+    <main><center>
+      <h2><center>Document Selection</center></h2>
+      <section>
+        <p><b><u>Headline: </u></b></p>
+        <!--Displaying the headline of the document-->
+        <a id="headline"></a>
+        <p><b><u>Short Description: </u></b></p>
+        <!--Displaying the short description of the document-->
+        <a id="short_description"></a>
+        <p><b><u>Authors: </u></b></p>
+        <!--Displaying the authors of the document-->
+        <a id="authors"></a>
+        <p><b><u>Date: </u></b></p>
+        <!--Displaying the date of the document-->
+        <a id="date"></a>
+        <p><b><u>Category: </u></b></p>
+        <!--Displaying the category of the document-->
+        <a id="category"></a>
+        <p><b><u>TopWords: </u></b></p>
+        <!--Displaying the top words of the document-->
+        <a id="topWords"></a>
+        <p><b><u>Link: </u></b></p>
+        <!--Displaying the link of the document-->
+        <a id="link" href = ""></a>
+        <h2>Keyword cloud: </h2>
+        <!--Displaying the wordcloud of the document-->
+        <div id='wordcloud'></div>
+      </section>
+      <script type="text/javascript">
+        //Calling the respective method to retrieve the data and create the wordcloud
+        getData();
+        getWordCloud();
+      </script>
+    </center></main>
+</body>
+
+</html>
