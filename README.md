@@ -120,6 +120,6 @@ Overall, the project successfully integrated interactive visualizations, informa
 
 ## Deliverables:
 The repository includes:<br />
-1. **Group Projects** - The directory which holds the Group Project<br />
-2. **Individual Projects** - The directory which holds the Individual Projects<br />
+1. [Group Projects](https://github.com/mbar0075/Web-Intelligence/tree/main/Group%20Projects) - The directory which holds the Group Project<br />
+2. [Individual Projects](https://github.com/mbar0075/Web-Intelligence/tree/main/Individual%20Projects) - The directory which holds the Individual Projects<br />
  
